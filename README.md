@@ -41,7 +41,7 @@ active(): it looks if a window is still activate or not;
 report(): window_close report;
 </li>
 <li>
-extractData(): it extract a content vector;
+extractData(): it extracts a content vector;
 </li>
 <li>
 evictWindow(): it deletes the window.
@@ -74,7 +74,7 @@ active(): it looks if a window is still activate or not;
 report(): window_close report;
 </li>
 <li>
-extractData(): it extract a content vector;
+extractData(): it extracts a content vector;
 </li>
 <li>
 evictWindow(): it deletes the window by deleting the node in which there was the window and it updates the list.
