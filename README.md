@@ -1,5 +1,5 @@
 # Windowing Function
-We present a model for analysis called [SECRET](https://people.csail.mit.edu/tatbul/publications/maxstream_vldb10.pdf) that is focussed on time-based windows amd songle-input integer plans.<br>
+We present a model for analysis called [SECRET](https://people.csail.mit.edu/tatbul/publications/maxstream_vldb10.pdf) that is focussed on time-based windows and single-input integer plans.<br>
 The windowing function is based on [SECRET](https://people.csail.mit.edu/tatbul/publications/maxstream_vldb10.pdf) Multi-Buffer behaviour, in which the buffer can be either an Hash table or a list.
 ## Hash Table
 ### Structure
@@ -14,11 +14,11 @@ the exactly position of the first window that owns the timestamp given:<br><br>
 The windows are put in the table in a sequetial way: the very first row will have the first avaiable window and so on.<br>
 The maximum number of windows that can coexist at the same moment is given by the dimension of the table.<br>
 When a window is put in the last row of the table, the next one will be put as first of the table contiguously; we have four indicators that help us: 
-<ul><li>M: it indicates the position of the first row in tha table with an active window;</li>
-<li>N: it indicates the position of the next row in the table where to put in the window; </li>
+<ul><li>M*: it indicates the position of the first row in tha table with an active window;</li>
+<li>N*: it indicates the position of the next row in the table where to put in the window; </li>
         <li>count: it indicates the numbers of all the windows passed since the beginning;</li>
         <li>c: it indicates the very first closure.</li></ul><br>
-Both of the values will start form zero once reached the maximum size of the table.
+*Both of the values will start form zero once reached the maximum size of the table.
 
 ### Main components
 <ul>
