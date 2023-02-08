@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "Buffer.h"
+#include "AlterazioneBuffer.h"
 
-int slide = 2; //scelgo un slide per le finestre
-int width = 10; //scelgo una larghezza per le finestre
+int slide = 5; //scelgo un slide per le finestre
+int width = 50; //scelgo una larghezza per le finestre
 int tprev = 0; //previous time
 
 typedef struct{ //Data interface type
-    char e[String_Lenght];
+    char **e;
     int ts;
 }data;
 
@@ -26,6 +26,13 @@ void evictWindow(int ts,int l){ //elimina la finestra
     ff = fopen("evict.txt","a");
     fprintf(ff,"Evicting [ %d, %d ), ts= %d\n",x->head[l]->w.o,x->head[l]->w.c,ts);
     if (x->head[l]->nc>0) { //se è presente del content all'interno vado a liberare lo spazio allocatogli precedentemente
+        for (int i=0;i<x->head[l]->nc;i++) {
+            for (int f = 0; f < Num_String; f++)
+                free(x->head[l]->c[i].e[f]);
+            free(x->head[l]->c[i].e);
+        }
+
+        free(x->head[l]->c);
         x->head[l]->c=NULL;
         x->head[l]->nc=0;
     }
@@ -138,8 +145,9 @@ int tick(int tau, int ts){ //funzione tick: ritorna 1 ( ovvero TRUE ) se il time
 void extractData(link h,data *cont){ //mi estrae un vettore di content (e,ts)
     if (h->nc!=0) {
         for (int i = 0; i < h->nc;i++){
-            for (int t=0;t<String_Lenght;t++)
-                cont[i].e[t] = h->c[i].e[t]; //estraggo l'elemento
+            for (int l=0;l<Num_String;l++)
+                for (int t=0;t<String_Lenght;t++)
+                    cont[i].e[l][t] = h->c[i].e[l][t]; //estraggo l'elemento
             cont[i].ts = h->c[i].ts; //estraggo il relativo timestamp
         }
     }
@@ -164,15 +172,26 @@ void compute(link h, data *content){ //stampa il content
     fp = fopen("log.txt","a");
     if (h->nc>0) { //se è presente del content
         fprintf(fp,"%d, %d, %d",tprev,h->w.o,h->w.c);
-        for (int i = 0; i < h->nc; i++)
-            fprintf(fp,", < %s, %d >", content[i].e, content[i].ts);
+
+        for (int i = 0; i < h->nc; i++) {
+            for (int l = 0; l < Num_String; l++) {
+                for (int p = 0; p < String_Lenght; p++) {
+                    if (l == 0 && p==0)
+                        fprintf(fp, ", < %c", content[i].e[l][p]);
+                    else
+                        fprintf(fp, "%c", content[i].e[l][p]);
+                }
+            }
+            fprintf(fp, ", %d >", content[i].ts);
+        }
         fprintf(fp,"\n");
     }
     fclose(fp);
 }
 
-void windowing(char e[String_Lenght], int ts){
+void windowing(char e[Num_String][String_Lenght], int ts){
     int l;
+
     data *cont = NULL;
 
     allocaBuffer(ts); //alloco il buffer
@@ -189,25 +208,48 @@ void windowing(char e[String_Lenght], int ts){
                 for (int i = x->M; i < k; i++) {
                     if (active(x->head[i]->w, ts)) {
                         cont=malloc(x->head[i]->nc * (sizeof(data)));
+                        for (int l=0;l<x->head[i]->nc;l++) {
+                            cont[l].e = malloc(Num_String * (sizeof(char *)));
+                            for (int y = 0; y < Num_String; y++)
+                                cont[l].e[y] = malloc(String_Lenght * (sizeof(char)));
+                        }
                         extractData(x->head[i], cont);
                         if (report(x->head[i]->w, ts)) {
                             compute(x->head[i], cont);
                         }
+                        for (int l=0;l<x->head[i]->nc;l++) {
+                            for (int y = 0; y < Num_String; y++)
+                                free(cont[l].e[y]);
+                            free(cont[l].e);
+                        }
                         free(cont);
                     }
+
                 }
                 for (int i = x->M; i < k; i++) {
                     if (x->head[i]->w.c <= ts) {
                         evictWindow(ts, i);
                     }
+                    else
+                        break;
                 }
             } else {
                 for (int i = x->M; i < MM; i++) { //primo ciclo
                     if (active(x->head[i]->w, ts)) {
                         cont=malloc(x->head[i]->nc * (sizeof(data)));
+                        for (int l=0;l<x->head[i]->nc;l++) {
+                            cont[l].e = malloc(Num_String * (sizeof(char *)));
+                            for (int y = 0; y < Num_String; y++)
+                                cont[l].e[y] = malloc(String_Lenght * (sizeof(char)));
+                        }
                         extractData(x->head[i], cont);
                         if (report(x->head[i]->w, ts)) {
                             compute(x->head[i], cont);
+                        }
+                        for (int l=0;l<x->head[i]->nc;l++) {
+                            for (int y = 0; y < Num_String; y++)
+                                free(cont[l].e[y]);
+                            free(cont[l].e);
                         }
                         free(cont);
                     }
@@ -215,15 +257,26 @@ void windowing(char e[String_Lenght], int ts){
                 for (int i = x->M; i < MM; i++) {
                     if (x->head[i]->w.c <= ts) {
                         evictWindow(ts, i);
-                    }
+                    } else
+                        break;
                 }
                 if (k != 0) { //secondo ciclo
                     for (int i = 0; i < k; i++) {
                         if (active(x->head[i]->w, ts)) {
                             cont=malloc(x->head[i]->nc * (sizeof(data)));
+                            for (int l=0;l<x->head[i]->nc;l++) {
+                                cont[l].e = malloc(Num_String * (sizeof(char *)));
+                                for (int y = 0; y < Num_String; y++)
+                                    cont[l].e[y] = malloc(String_Lenght * (sizeof(char)));
+                            }
                             extractData(x->head[i], cont);
                             if (report(x->head[i]->w, ts)) {
                                 compute(x->head[i], cont);
+                            }
+                            for (int l=0;l<x->head[i]->nc;l++) {
+                                for (int y = 0; y < Num_String; y++)
+                                    free(cont[l].e[y]);
+                                free(cont[l].e);
                             }
                             free(cont);
                         }
@@ -232,6 +285,8 @@ void windowing(char e[String_Lenght], int ts){
                         if (x->head[i]->w.c <= ts) {
                             evictWindow(ts, i);
                         }
+                        else
+                            break;
                     }
                 }
             }
