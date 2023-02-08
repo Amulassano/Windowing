@@ -1,5 +1,6 @@
-#define MM 1000
-#define String_Lenght 10000
+#define MM 100000
+#define String_Lenght 20
+#define Num_String 1
 
 typedef struct List *list;
 typedef struct  node *link;
@@ -10,7 +11,7 @@ typedef struct wind{ // [o,c)
 }window;
 
 typedef struct content{
-    char e[String_Lenght];
+    char **e;
     int ts;
 }content;
 
@@ -32,4 +33,4 @@ list x;
 
 
 void allocaBuffer(int ts);
-void addToBuffer(char e[String_Lenght], int ts, int l);
+void addToBuffer(char e[Num_String][String_Lenght], int ts, int l);
