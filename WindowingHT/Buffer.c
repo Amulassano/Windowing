@@ -5,7 +5,7 @@
 int t = 0; //initial time
 int slid = 5; //initial slide
 
-void allocateBuffer(int ts){ // it allocate the buffer, at the beginning it will be empty and the head will be NULL and the number of elements will be zero
+void allocateBuffer(int ts){ // it allocates the buffer, at the beginning it will be empty and the head will be NULL and the number of elements will be zero
     if (x==NULL) {
         x = malloc(sizeof *x);
         x->head = malloc(Table_Length*(sizeof (x->head)));
