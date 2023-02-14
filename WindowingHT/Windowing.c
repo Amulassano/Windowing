@@ -3,8 +3,8 @@
 #include <math.h>
 #include "AlterazioneBuffer.h"
 
-int slide = 5; //scelgo un slide per le finestre
-int width = 50; //scelgo una larghezza per le finestre
+int slide = 5; //initial slide
+int width = 50; //initial width
 int tprev = 0; //previous time
 
 typedef struct{ //Data interface type
@@ -12,20 +12,20 @@ typedef struct{ //Data interface type
     int ts;
 }data;
 
-link newNode( int o,int c){ // mi crea un nuovo nodo nella lista
+link newNode( int o,int c){ //it creates a new node in the list
     link p = malloc(sizeof *p);
-    p->w.c = c; //c = chiusura della finestra
-    p->w.o = o; //o = apertura della finestra
-    p->nc = 0; //indica il numero di contenuti all'interno della finestra considerata
-    p->c = NULL; //al momento della creazione di un nodo il contenuto non è esistente
+    p->w.c = c; //c = window closure
+    p->w.o = o; //o = window opening
+    p->nc = 0; // it indicates the number of contents in the considered window
+    p->c = NULL; //in the creation of the node the content doesn't exist yet
     return p;
 }
 
-void evictWindow(int ts,int l){ //elimina la finestra
+void evictWindow(int ts,int l){ //delete the window
     FILE *ff;
     ff = fopen("evict.txt","a");
     fprintf(ff,"Evicting [ %d, %d ), ts= %d\n",x->head[l]->w.o,x->head[l]->w.c,ts);
-    if (x->head[l]->nc>0) { //se è presente del content all'interno vado a liberare lo spazio allocatogli precedentemente
+    if (x->head[l]->nc>0) { //if some content is inside it will free that space
         for (int i=0;i<x->head[l]->nc;i++) {
             for (int f = 0; f < Num_String; f++)
                 free(x->head[l]->c[i].e[f]);
@@ -36,50 +36,50 @@ void evictWindow(int ts,int l){ //elimina la finestra
         x->head[l]->c=NULL;
         x->head[l]->nc=0;
     }
-    x->M++; //diminuisco nel Buffer il totale delle finestre presenti
-    if (x->M >=MM)
-        x->M -= MM;
+    x->M++; //it decreases the amount of windows in the Buffer
+    if (x->M >=Table_Length)
+        x->M -= Table_Length;
     fclose(ff);
 }
 
-int giveMeLast(){ //mi ritorna la posizione dell'ultima finestra aperta se la tabella fosse infinita
+int giveMeLast(){ //it returns the position of the last open window if the table was infinite
     if (x->count==0)
         return 0;
     return (int)ceil((double)(tprev-x->c)/(double)slide);
 }
 
-void TakeAllOff(int pos){
-    x->M =pos%MM;
-    x->N =(pos)%MM;
+void TakeAllOff(int pos){ //it frees the whole table
+    x->M =pos%Table_Length;
+    x->N =(pos)%Table_Length;
     free(x->head);
-    x->head = malloc(MM*(sizeof (x->head)));
+    x->head = malloc(Table_Length*(sizeof (x->head)));
 }
 
 int chooseIfSkip(int ts){
     int l = (int)ceil((double)(ts-x->c)/(double)slide);
     int last = giveMeLast();
-    if (l-last<MM)
+    if (l-last<Table_Length)
         return 1;
     return 0;
 }
 
-int scope(int ts){ //funzione scope, ritorna posizione esatta di dove inserire (e,ts)
+int scope(int ts){ //scope function: it returns the exactly position in which to put (e,ts)
     int c = x->c;
-    int o = c - width; //calcolo l'apertura della prima finestra
+    int o = c - width; //it computes the opening of the very first window
     int i = 0;
     int l;
     l = (int)ceil((double)(ts-c)/(double)slide); //hash
     int last = giveMeLast();
     if (chooseIfSkip(ts)) {
-        l= l%MM; //avendo MM celle, la posizione della mia finestra sarà sempre al suo interno
+        l= l%Table_Length; //to be sure the position will be in the range of the table length
         if (x->count == 0) {
             printf("Calculating the Windows to Open. First one opens at [ %d ] and closes at [ %d ],ts=%d\n", o, c, ts);
-            do { //ciclo che calcola, dalla prima finestra, tutte le finestre fino al mio timestamp attuale
+            do { //it computes all thewindows, from the first, till to my current timestap
                 printf("Computing window [ %d , %d ) if absent\n", o, o + width);
                 x->N++;
                 x->count++;
-                if (x->N >= MM) //se l'ultima casella supera il l'ampiezza della tabella, si ritorna da zero
-                    x->N = x->N - MM;
+                if (x->N >= Table_Length) //if the last ceil overcome the width of the table, the count will restart from zero
+                    x->N = x->N - Table_Length;
                 x->head[i] = newNode(o, o + width);
                 o += slide;
                 i++;
@@ -87,10 +87,10 @@ int scope(int ts){ //funzione scope, ritorna posizione esatta di dove inserire (
         } else {
             printf("Calculating the Windows to Open. First one opens at [ %d ] and closes at [ %d ],ts=%d\n",
                    x->head[x->M]->w.o, x->head[x->M]->w.c, ts);
-            //calcola le nuove finestre e le aggiunge a quelle già presenti
+            //it computes the new windows and adds them to the previous ones
 
             if (x->N == 0) {
-                o = x->head[MM - 1]->w.o + slide;
+                o = x->head[Table_Length - 1]->w.o + slide;
                 i = 0;
             } else {
                 i = x->N;
@@ -101,81 +101,81 @@ int scope(int ts){ //funzione scope, ritorna posizione esatta di dove inserire (
                     printf("Computing window [ %d , %d ) if absent\n", o, o + width);
                     x->N++;
                     x->count++;
-                    if (x->N >= MM) //se l'ultima casella supera il l'ampiezza della tabella, si ritorna da zero
-                        x->N = x->N - MM;
+                    if (x->N >= Table_Length) //if the last ceil overcome the width of the table, the count will restart from zero
+                        x->N = x->N - Table_Length;
                     x->head[i] = newNode(o, o + width);
                     o += slide;
                     i++;
-                    if (i >= MM) //il contatore riparte dalla prima casella
-                        i -= MM;
+                    if (i >= Table_Length) //the counter restarts from the first ceil
+                        i -= Table_Length;
                 }
             }
         }
     }
     else{
-        last = last%MM;
+        last = last%Table_Length;
         int ch = x->head[last]->w.c;
         while (ch<ts)
             ch += width;
         TakeAllOff(l);
         o = ch-width;
-        i = l%MM;
+        i = l%Table_Length;
         printf("Calculating the Windows to Open. First one opens at [ %d ] and closes at [ %d ],ts=%d\n", o, ch, ts);
-        do { //ciclo che calcola, dalla prima finestra, tutte le finestre fino al mio timestamp attuale
+        do { //it computes all thewindows, from the first, till to my current timestap
             printf("Computing window [ %d , %d ) if absent\n", o, o + width);
             x->N++;
             x->count++;
-            if (x->N >= MM) //se l'ultima casella supera il l'ampiezza della tabella, si ritorna da zero
-                x->N = x->N - MM;
+            if (x->N >= Table_Length) //if the last ceil overcome the width of the table, the count will restart from zero
+                x->N = x->N - Table_Length;
             x->head[i] = newNode(o, o + width);
             o += slide;
             i++;
-            i = i%MM;
+            i = i%Table_Length;
         } while (o <= ts);
     }
     return l;
 }
 
-int tick(int tau, int ts){ //funzione tick: ritorna 1 ( ovvero TRUE ) se il timestamp attuale è maggiore o uguale a quello precedente ( tau ), altrimenti 0 ( FALSE )
+int tick(int tau, int ts){ //tick function: it returns 1 ( TRUE ) if the current timestamp it's greater than or equal to the previous one ( tau ), otherwise it returns 0 ( FALSE )
     if (ts>=tau)
         return 1;
     return 0;
 }
 
-void extractData(link h,data *cont){ //mi estrae un vettore di content (e,ts)
+void extractData(link h,data *cont){ //it extracts a content vector
     if (h->nc!=0) {
         for (int i = 0; i < h->nc;i++){
             for (int l=0;l<Num_String;l++)
-                for (int t=0;t<String_Lenght;t++)
-                    cont[i].e[l][t] = h->c[i].e[l][t]; //estraggo l'elemento
-            cont[i].ts = h->c[i].ts; //estraggo il relativo timestamp
+                for (int t=0;t<String_Length;t++)
+                    cont[i].e[l][t] = h->c[i].e[l][t]; //it extracts the last element
+            cont[i].ts = h->c[i].ts; //it extracts its timestamp
         }
     }
     else
         return ;
 }
 
-int active(window w, int ts){ //controllo se la finestra è attiva o meno: se l'attuale timestamp è compreso tra gli estremi della finestra allora essa è attiva e restituisce 1, altrimenti no e restituisce zero
+int active(window w, int ts){ // it checks if the window is activate: if the current timestamp is in between the window extremes it is activate and it returns 1, otherwise it's not activate and it returns 0
     if (w.o<=ts && ts<= w.c)
         return 1;
     return 0;
 }
 
-int report(window w, int ts){ //report: window_close ( restituisce ( TRUE ) se timestamp = chiusura della finestra )
+int report(window w, int ts){ //report: window_close ( it returns TRUE if timestamp = window closure )
     if (w.c==ts)
         return 1;
     return 0;
 }
 
-void compute(link h, data *content){ //stampa il content
+void compute(link h, data *content){ //it prints the content
     FILE *fp;
     fp = fopen("log.txt","a");
-    if (h->nc>0) { //se è presente del content
+    if (h->nc>0) { //if there is some content
         fprintf(fp,"%d, %d, %d",tprev,h->w.o,h->w.c);
 
         for (int i = 0; i < h->nc; i++) {
             for (int l = 0; l < Num_String; l++) {
-                for (int p = 0; p < String_Lenght; p++) {
+                for (int p = 0; p < String_Length; p++) {
                     if (l == 0 && p==0)
                         fprintf(fp, ", < %c", content[i].e[l][p]);
                     else
@@ -189,29 +189,30 @@ void compute(link h, data *content){ //stampa il content
     fclose(fp);
 }
 
-void windowing(char e[Num_String][String_Lenght], int ts){
+void windowing(char e[Num_String][String_Length], int ts){
     int l;
 
     data *cont = NULL;
 
-    allocaBuffer(ts); //alloco il buffer
+    allocateBuffer(ts); //it allocates the buffer
 
     if (ts>=tprev) {
 
-        l = scope(ts); //trovo l'indice della finestra in cui mettere il content
+        l = scope(ts); //it finds the index of the ceil in which to insert the content
 
-        addToBuffer(e, ts, l); //aggiungo il content
+
+        addToBuffer(e, ts, l); //add the content
 
         if (tick(tprev, ts) && chooseIfSkip(ts)==1) {
             int k = x->N;
-            if (x->N > x->M) { //due casi: N>M -> posso iterare nella tabella tranquillamente, N<M significa che la prima finestra ha sede in M e l'ultima in N e dunque per iterare la tabella servono due diversi cicli: il primo fino all'ampiezza massima e il secondo che parte da zero e arriva ad N
+            if (x->N > x->M) { // two cases: N>M -> it can iter in the table without problems; N<M -> it means that there is a need of two cycles: the first goes up to the table length and the second starts from zero and goes up to N
                 for (int i = x->M; i < k; i++) {
                     if (active(x->head[i]->w, ts)) {
                         cont=malloc(x->head[i]->nc * (sizeof(data)));
                         for (int l=0;l<x->head[i]->nc;l++) {
                             cont[l].e = malloc(Num_String * (sizeof(char *)));
                             for (int y = 0; y < Num_String; y++)
-                                cont[l].e[y] = malloc(String_Lenght * (sizeof(char)));
+                                cont[l].e[y] = malloc(String_Length * (sizeof(char)));
                         }
                         extractData(x->head[i], cont);
                         if (report(x->head[i]->w, ts)) {
@@ -234,13 +235,13 @@ void windowing(char e[Num_String][String_Lenght], int ts){
                         break;
                 }
             } else {
-                for (int i = x->M; i < MM; i++) { //primo ciclo
+                for (int i = x->M; i < Table_Length; i++) { //first cycle
                     if (active(x->head[i]->w, ts)) {
                         cont=malloc(x->head[i]->nc * (sizeof(data)));
                         for (int l=0;l<x->head[i]->nc;l++) {
                             cont[l].e = malloc(Num_String * (sizeof(char *)));
                             for (int y = 0; y < Num_String; y++)
-                                cont[l].e[y] = malloc(String_Lenght * (sizeof(char)));
+                                cont[l].e[y] = malloc(String_Length * (sizeof(char)));
                         }
                         extractData(x->head[i], cont);
                         if (report(x->head[i]->w, ts)) {
@@ -254,20 +255,20 @@ void windowing(char e[Num_String][String_Lenght], int ts){
                         free(cont);
                     }
                 }
-                for (int i = x->M; i < MM; i++) {
+                for (int i = x->M; i < Table_Length; i++) {
                     if (x->head[i]->w.c <= ts) {
                         evictWindow(ts, i);
                     } else
                         break;
                 }
-                if (k != 0) { //secondo ciclo
+                if (k != 0) { //second cycle
                     for (int i = 0; i < k; i++) {
                         if (active(x->head[i]->w, ts)) {
                             cont=malloc(x->head[i]->nc * (sizeof(data)));
                             for (int l=0;l<x->head[i]->nc;l++) {
                                 cont[l].e = malloc(Num_String * (sizeof(char *)));
                                 for (int y = 0; y < Num_String; y++)
-                                    cont[l].e[y] = malloc(String_Lenght * (sizeof(char)));
+                                    cont[l].e[y] = malloc(String_Length * (sizeof(char)));
                             }
                             extractData(x->head[i], cont);
                             if (report(x->head[i]->w, ts)) {
