@@ -7,7 +7,7 @@
 Run the file called *main.c*,  automatically the windowing function will be called with already set parameters. <br> 
 If you want to change those parameters you just have to manipulate that function by setting the windowing function in the way you prefer.
 
-### Phyton
+### Python
 First of all you have to create a file python in the same place where the *.c are located. <br>
 Then you have to write on the terminal: `gcc -o library.so -shared -fPIC Windowing.c Buffer.c` <br>
 That line will create a windowing library called *library.so* that we can call from the python file.
@@ -27,7 +27,7 @@ It's important to set the python machine with the same bit as the C one, so if y
 Run the file called *main.c*,  automatically the windowing function will be called with already set parameters. <br> 
 If you want to change those parameters you just have to manipulate that function by setting the windowing function in the way you prefer, but you have to remember that this version works only with integer value.
 
-### Phyton
+### Python
 
 First of all you have to create a file python in the same place where the *.c are located. <br>
 Then you have to write on the terminal: `gcc -o library.so -shared -fPIC Windowing.c Buffer.c` <br>
