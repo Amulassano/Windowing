@@ -9,7 +9,7 @@ If you want to change those parameters you just have to manipulate that function
 
 ### Python
 First of all you have to create a file python in the same place where the *.c are located. <br>
-Then you have to write on the terminal: `gcc -o library.so -shared -fPIC Windowing.c Buffer.c` <br>
+Then you have to write in the terminal: `gcc -o library.so -shared -fPIC Windowing.c Buffer.c` <br>
 That line will create a windowing library called *library.so* that we can call from the python file.
 Here an exemple of how to call it: <br>
 ```
@@ -30,7 +30,7 @@ If you want to change those parameters you just have to manipulate that function
 ### Python
 
 First of all you have to create a file python in the same place where the *.c are located. <br>
-Then you have to write on the terminal: `gcc -o library.so -shared -fPIC Windowing.c Buffer.c` <br>
+Then you have to write in the terminal: `gcc -o library.so -shared -fPIC Windowing.c Buffer.c` <br>
 That line will create a windowing library called *library.so* that we can call from the python file.
 Here an exemple of how to call it: <br>
 ```
