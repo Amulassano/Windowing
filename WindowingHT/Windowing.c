@@ -74,7 +74,7 @@ int scope(int ts){ //scope function: it returns the exactly position in which to
         l= l%Table_Length; //to be sure the position will be in the range of the table length
         if (x->count == 0) {
             printf("Calculating the Windows to Open. First one opens at [ %d ] and closes at [ %d ],ts=%d\n", o, c, ts);
-            do { //it computes all thewindows, from the first, till to my current timestap
+            do { //it computes all the windows, from the first, till to my current timestap
                 printf("Computing window [ %d , %d ) if absent\n", o, o + width);
                 x->N++;
                 x->count++;
