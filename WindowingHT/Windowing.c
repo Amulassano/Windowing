@@ -3,8 +3,8 @@
 #include <math.h>
 #include "AlterazioneBuffer.h"
 
-int slide = 5; //initial slide
-int width = 50; //initial width
+int slide = 5; //slide of a window
+int width = 50; //width of a window
 int tprev = 0; //previous time
 
 typedef struct{ //Data interface type
