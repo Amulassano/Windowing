@@ -3,25 +3,25 @@
 #include <math.h>
 #include "Buffer.h"
 
-int t0 = 0; //scelgo un tempo iniziale
-int slide = 2; //scelgo un slide per le finestre
-int width = 2; //scelgo una larghezza per le finestre
+int t0 = 0; //initial time
+int slide = 2; //slide of a widnow
+int width = 2; //width of a window
 int tprev = 0; //previous time
 
 
-link newNode(int *content, int o,int c, link next){ // mi crea un nuovo nodo nella lista
+link newNode(int *content, int o,int c, link next){ // it creates a new node in the list
     link p = malloc(sizeof *p);
     if (p == NULL)
         return NULL;
     else {
-        p->next = next; //next indica il nodo successivo
-        p->w.c = c; //c = chiusura della finestra
-        p->w.o = o; //o = apertura della finestra
-        p->nc = 0; //indica il numero di contenuti all'interno della finestra considerata
-        p->content = NULL; //al momento della creazione di un nodo il contenuto non è esistente
+        p->next = next; //next indicates the following node
+        p->w.c = c; //c = window closure
+        p->w.o = o; //o = window opening
+        p->nc = 0; //it indicates the number of item in that window
+        p->content = NULL; //in the creation of the node the content doesn't exist yet
         if (content != NULL) {
             p->nc++;
-            p->content = malloc(sizeof (int*)); //alloco il contenuto come una matrice di vettori di dimensione 2: la prima rappresenta l'elemento e la seconda il timestamp
+            p->content = malloc(sizeof (int*)); //it allocates the content as a matrix of two dimensions: the first represents the element and the second the timestamp
             p->content[0] = malloc(2*sizeof (int));
             p->content[0][0] = content[0];
             p->content[0][1] = content[0];
@@ -30,23 +30,23 @@ link newNode(int *content, int o,int c, link next){ // mi crea un nuovo nodo nel
     return p;
 }
 
-link listInsTail(link h,int *content, int o,int c){ //inserisce in coda una lista: utile per lo scope
+link listInsTail(link h,int *content, int o,int c){ //it inserts the node in the tail: useful for the scope
     link p;
     if (h==NULL)
         return newNode(content,o,c,NULL);
-    for (p=h; p->next != NULL ; p= p->next);//ricerca in mood sequenziale l'ultimo nodo per crearne uno nuovo successivamente
+    for (p=h; p->next != NULL ; p= p->next);//it looks for the last node in a sequentially way in order to create a new one
     p->next = newNode(content,o,c,NULL);
     return h;
 }
 
-link scope(int ts){ //funzione scope
-    int c = (int) ceil((double) abs(ts- t0) / (double) slide)*slide; //calcolo la chiusura della prima finestra
-    int o = c - width; //calcolo l'apertura della prima finestra
+link scope(int ts){ // scope function
+    int c = (int) ceil((double) abs(ts- t0) / (double) slide)*slide; //it computes the closure of the first window
+    int o = c - width; //it computes the opening of the first window
     link p = x->head;
-    if (p==NULL) { //se non sono ancora presenti finestre le aggiunge da zero
+    if (p==NULL) { //if there aren't any windows yet, it creates them 
         printf("Calculating the Windows to Open. First one opens at [ %d ] and closes at [ %d ]\n", o, c);
 
-        do { //ciclo che calcola, dalla prima finestra, tutte le finestre fino al mio timestamp attuale
+        do { //it computes all the windows, from the first, till to my current timestap
             printf("Computing window [ %d , %d ) if absent\n", o, o + width);
             x->n++;
             p = listInsTail(p, NULL, o, o + width);
@@ -54,7 +54,7 @@ link scope(int ts){ //funzione scope
 
         } while (o <= ts);
     }
-    else{ //calcola le nuove finestre e le aggiunge a quelle già presenti
+    else{ //it computes the new windows and adds them to the previous ones
         link l=p;
         while (l->next!=NULL)
             l=l->next;
@@ -72,20 +72,20 @@ link scope(int ts){ //funzione scope
     return p;
 }
 
-int tick(int tau, int ts){ //funzione tick: ritorna 1 ( ovvero TRUE ) se il timestamp attuale è maggiore o uguale a quello precedente ( tau ), altrimenti 0 ( FALSE )
+int tick(int tau, int ts){ //tick function: it returns 1 ( TRUE ) if the current timestamp it's greater than or equal to the previous one ( tau ), otherwise it returns 0 ( FALSE )
     if (ts>=tau)
         return 1;
     return 0;
 }
 
-void extractData(link h,int ***cont){ //mi estrae un vettore di content (e,ts)
+void extractData(link h,int ***cont){ //it extracts a content vector
     int **p;
     if (h->nc!=0) {
         p = malloc(h->nc * (sizeof(int *)));
         for (int i = 0; i < h->nc;i++){
             p[i] = malloc(2*(sizeof (int)));
-            p[i][0] = h->content[i][0]; //estraggo l'elemento
-            p[i][1] = h->content[i][1]; //estraggo il relativo timestamp
+            p[i][0] = h->content[i][0]; //it extracts the element
+            p[i][1] = h->content[i][1]; //it extracts its timestamp
         }
         *cont=p;
     }
@@ -93,41 +93,41 @@ void extractData(link h,int ***cont){ //mi estrae un vettore di content (e,ts)
         return ;
 }
 
-int active(window w, int ts){ //controllo se la finestra è attiva o meno: se l'attuale timestamp è compreso tra gli estremi della finestra allora essa è attiva e restituisce 1, altrimenti no e restituisce zero
+int active(window w, int ts){ //it checks if the window is activate: if the current timestamp is in between the window extremes it is activate and it returns 1, otherwise it's not activate and it returns 0
     if (w.o<=ts && ts<= w.c)
         return 1;
     return 0;
 }
 
-int report(window w, int ts){ //report: window_close ( restituisce ( TRUE ) se timestamp = chiusura della finestra )
+int report(window w, int ts){ //report: window_close ( it returns TRUE if timestamp = window closure )
     if (w.c==ts)
         return 1;
     return 0;
 }
 
-link evictWindow(int ts){ //elimina la finestra
+link evictWindow(int ts){ //delete the window
     FILE *ff;
     ff = fopen("evict.txt","a");
     link p = x->head;
     fprintf(ff,"Evicting [ %d, %d ], ts= %d\n",p->w.o,p->w.c,ts);
-    if (x->head==NULL) //se finestra già inesistente
+    if (x->head==NULL) //if there are no windows
         return NULL;
     x->head = x->head->next;
-    if (p->nc>0) { //se è presente del content all'interno vado a liberare lo spazio allocatogli precedentemente
+    if (p->nc>0) { //if some content is inside it will free that space
         for (int i = 0; i < p->nc; i++)
             free(p->content[i]);
         free(p->content);
     }
     free(p);
-    x->n--; //diminuisco nel Buffer il totale delle finestre presenti
+    x->n--; //it decreases the amount of windows in the Buffer
     fclose(ff);
     return x->head;
 }
 
-void compute(link h, int **content){ //stampa il content
+void compute(link h, int **content){ //it prints the content
     FILE *fp;
     fp = fopen("log.txt","a");
-    if (h->nc>0) { //se è presente del content
+    if (h->nc>0) { //if there is some content
         fprintf(fp,"%d, %d, %d",tprev,h->w.o,h->w.c);
         for (int i = 0; i < h->nc; i++)
             fprintf(fp, ", < %d, %d >", content[i][0], content[i][1]);
@@ -138,7 +138,7 @@ void compute(link h, int **content){ //stampa il content
 
 void windowing(int e, int ts){
 
-    allocaBuffer(); //
+    allocateBuffer(); //
 
     if (ts>=tprev)
         x->head = scope(ts);
