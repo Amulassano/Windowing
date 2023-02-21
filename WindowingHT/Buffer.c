@@ -16,17 +16,17 @@ void allocateBuffer(int ts){ // it allocates the buffer, at the beginning it wil
     }
 }
 
-void addToBuffer(char e[Num_String][String_Length], int ts, int l){ //add the content to the Buffer
+void addToBuffer(char e[Num_String][String_Length], int ts, int l){ //add the item to the Buffer
     if (x->M>x->N){ //in case N starts again from 0
         while (l<Table_Length) {
             if (ts != x->head[l]->w.c) {
                 int k = x->N;
                 x->head[l]->nc++;
                 if (x->head[l]->c ==
-                    NULL) { //if the window is empty of content i will allocate space
+                    NULL) { //if the window is empty of content it will allocate space
                     x->head[l]->c = malloc(sizeof(*x->head[l]->c));
 
-                } else { //if in the window there is some content i will increase the allocation space
+                } else { //if in the window there is some content it will increase the allocation space
                     x->head[l]->c = realloc(x->head[l]->c, (x->head[l]->nc) * (sizeof(*x->head[l]->c)));
 
                 }
@@ -44,9 +44,9 @@ void addToBuffer(char e[Num_String][String_Length], int ts, int l){ //add the co
             if (ts != x->head[l]->w.c) {
                 x->head[l]->nc++;
                 if (x->head[l]->c ==
-                    NULL) { //if the window is empty of content i will allocate space
+                    NULL) { //if the window is empty of content it will allocate space
                     x->head[l]->c = malloc(sizeof(*x->head[l]->c));
-                } else { //if in the window there is some content i will increase the allocation space
+                } else { //if in the window there is some content it will increase the allocation space
                     x->head[l]->c = realloc(x->head[l]->c, (x->head[l]->nc) * (sizeof(*x->head[l]->c)));
 
                 }
@@ -66,9 +66,9 @@ void addToBuffer(char e[Num_String][String_Length], int ts, int l){ //add the co
             if (ts != x->head[l]->w.c) {
                 x->head[l]->nc++;
                 if (x->head[l]->c ==
-                    NULL) { //if the window is empty of content i will allocate space
+                    NULL) { //if the window is empty of content it will allocate space
                     x->head[l]->c = malloc(sizeof(*x->head[l]->c));
-                } else { //if in the window there is some content i will increase the allocation space
+                } else { //if in the window there is some content it will increase the allocation space
                     x->head[l]->c = realloc(x->head[l]->c, (x->head[l]->nc) * (sizeof(*x->head[l]->c)));
                 }
                 x->head[l]->c[x->head[l]->nc - 1].e = malloc(Num_String*sizeof(char*));
