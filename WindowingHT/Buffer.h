@@ -18,7 +18,7 @@ typedef struct content{
 struct node{
     window w;
     content *c; //vector of (e,ts)
-    int nc; //number of contents in the window
+    int nc; //number of item in the window
 
 };
 
