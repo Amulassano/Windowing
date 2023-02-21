@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "Buffer.h"
 
-void allocaBuffer(){ //alloca il Buffer, che inizialmente sarà vuoto e dunque la testa sarà = NULL e il numero di elementi presenti sarà zero
+void allocateBuffer(){ // it allocates the buffer, at the beginning it will be empty and the head will be NULL and the number of elements will be zero
     if (x==NULL) {
         x = malloc(sizeof *x);
         x->head = NULL;
@@ -9,24 +9,24 @@ void allocaBuffer(){ //alloca il Buffer, che inizialmente sarà vuoto e dunque l
     }
 }
 
-static void contentInsert(int e,int ts, link h){ //inserisce il content: conosco già la finestra in cui metterlo
+static void contentInsert(int e,int ts, link h){ //it insert the content: it knows already the window where to put it
     link p = h;
     p->nc++;
-    if (p->content==NULL) { //se nella finestra non è già presente un conenuto allora vado ad allocare lo spazio da zero
+    if (p->content==NULL) { //if the window is empty of content it will allocate space
         p->content = malloc((p->nc) * (sizeof(int *)));
         p->content[p->nc - 1] = malloc(2 * sizeof(int));
     }
-    else{ //se è già presente del contenuto aumento lo spazio dell'allocazione dinamica
+    else{ //if in the window there is some content it will increase the allocation space
         p->content = realloc(p->content,(p->nc) * (sizeof(int *)));
         p->content[p->nc - 1] = malloc(2 * sizeof(int));
     }
-    p->content[p->nc-1][0] = e; //p->[n][0] indica l'ennesimo content di quella finestra
-    p->content[p->nc-1][1] = ts;//p->[n][1] indica l'ennesimo timestamp di quella finestra
+    p->content[p->nc-1][0] = e; //p->[n][0] it indicates the umpteenth element of that window
+    p->content[p->nc-1][1] = ts;//p->[n][1] it indicates the umpteenth timestamp of that window
 }
 
-void addToBuffer(int e, int ts){ //aggiunge al Buffer
+void addToBuffer(int e, int ts){ //add the item to the Buffer
     link p = x->head;
     for (int i=0;i<x->n;i++,p=p->next)
-        if (p->w.o<=ts && ts<p->w.c) //cerco le finestre in cui il timestamp sia all'interno
+        if (p->w.o<=ts && ts<p->w.c) // it looks for the windows in which the timestamp is inside them
             contentInsert(e,ts,p);
 }
