@@ -7,18 +7,18 @@ typedef struct wind{
 }window;
 
 struct node{
-    link next; //punta alla finestra successiva
-    window w; //finestra
-    int **content; //content:(vettore di (e,ts)
-    int nc; //numero di oggetti content nella finestra
+    link next; //it's linked to the following window
+    window w; 
+    int **content; //content:(vector of (e,ts)
+    int nc; //number of item in the window
 };
 
 struct List{ //Buffer
-    link head; //prima finestra
-    int n; //numero totale di finestre
+    link head; //first window
+    int n; //number of windows
 };
 
 list x ;
 
-void allocaBuffer();
+void allocateBuffer();
 void addToBuffer(int e, int ts);
